@@ -322,7 +322,7 @@ func TestErrors(t *testing.T) {
 		t.Fatal("cannot write temporary directory: " + dir)
 	}
 
-	file, err := os.Open(locked)
+	file, err := os.OpenFile(locked, os.O_RDWR, 0600|os.ModeExclusive)
 	if err != nil {
 		t.Fatal("cannot open temporary file: " + locked)
 	}
