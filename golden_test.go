@@ -311,22 +311,16 @@ func TestMock(t *testing.T) {
 }
 
 func TestErrors(t *testing.T) {
-	missing, locked, dir := "missing", "locked", "dir"
-	defer TmpFiles(t, &missing, &locked, &dir)()
+	missing, file, dir := "missing", "file", "dir"
+	defer TmpFiles(t, &missing, &file, &dir)()
 
-	if err := ioutil.WriteFile(locked, nil, 0600); err != nil {
-		t.Fatal("cannot write temporary file: " + locked)
+	if err := ioutil.WriteFile(file, nil, 0600); err != nil {
+		t.Fatal("cannot write temporary file: " + file)
 	}
 
 	if err := os.MkdirAll(dir, 0700); err != nil {
 		t.Fatal("cannot write temporary directory: " + dir)
 	}
-
-	file, err := os.OpenFile(locked, os.O_RDWR, 0600|os.ModeExclusive)
-	if err != nil {
-		t.Fatal("cannot open temporary file: " + locked)
-	}
-	defer file.Close()
 
 	Test(t, new(echo), ToCase([]FailCase{
 		// bad arguments
@@ -370,7 +364,7 @@ func TestErrors(t *testing.T) {
 		},
 		// bad file
 		{
-			Args:         []string{"echo", "file", locked},
+			Args:         []string{"echo", "file", file},
 			WantFile:     missing,
 			WantFail:     ptrTo("File read error:\n..."),
 			WantExitCode: 0,
@@ -378,11 +372,6 @@ func TestErrors(t *testing.T) {
 			Args:         []string{"echo", "stdout"},
 			WantFile:     dir,
 			WantFail:     ptrTo("File mode error:\nexpected regular file"),
-			WantExitCode: 0,
-		}, {
-			Args:         []string{"echo", "file", locked},
-			WantFile:     locked,
-			WantFail:     ptrTo("File remove error:\n..."),
 			WantExitCode: 0,
 		},
 	}))
